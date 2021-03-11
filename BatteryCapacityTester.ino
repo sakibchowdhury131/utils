@@ -30,6 +30,8 @@ float Dcurrent = 0.0;
 float Dcapacity = 0.0;
 unsigned long previousMillis = 0; // Previous time in ms
 unsigned long millisPassed = 0;  // Current time in ms
+bool button_pressed = false;
+
 
 void setup(){
   Serial.begin(9600);
@@ -48,12 +50,19 @@ void setup(){
   display.setCursor(0, 0);
   display.println("Battery Capacity Meter");
   display.display();
+  delay(1000);
+
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
+  display.println("Using Last Saved Values...");
+  display.display();
   delay(2000);
 }
 
 void loop(){
   calculate();
-  
 }
 
 bool check_battery_availability() {
@@ -90,6 +99,7 @@ void eraseEEPROM(){
   }
   Serial.println("EEPROM erased...");
   Dcapacity = 0;
+  button_pressed = true; 
 }
 
 void readEEPROM(){
@@ -141,8 +151,33 @@ void calculate(){
       save2EEPROM(x);
     } else {
       Serial.println("Battery fully Discharged...");
+      readEEPROM();
+      display.clearDisplay();
+      display.setTextSize(1);
+      display.setTextColor(WHITE);
+      display.setCursor(0, 0);
+      display.println("Battery Fully Discharged");
+      display.print("Total Capacity: "); display.print(Dcapacity); display.println(" mAh");
+      display.display();
     }
   } else {
     Serial.println("no battery connected...");
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0, 0);
+    display.println("No Battery Connected...");
+    display.display();
+  }
+
+  if (button_pressed){
+    button_pressed = false;
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0, 0);
+    display.println("EEPROM Erased...");
+    display.display();
+    delay(1000);
   }
 }
